@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TryCoding</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+    <link rel="stylesheet" href="./try.css">
+
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    <script src="js/Sortable.js"></script>
+    
+    <!-- dropzone -->
+    <link rel="stylesheet" href="./dropzone.min.css" type="text/css"/>
+    <script src="./dropzone.min.js"></script>
+
+    <style>
+        /* 오늘 하루 보지 않기 팝업 */
+        button {
+            border: 0;
+            background: none;
+            cursor:pointer;
+        }
+
+        .main_popup {
+            position: fixed;
+            z-index: 9999;
+            -webkit-box-shadow: 0px 0px 15px 5px rgba(0,0,0, 0.5);
+            box-shadow: 0px 0px 15px 5px rgba(0,0,0, 0.5);
+            top: 50px;
+            left: 50px;
+            display: none;
+
+        }
+        .main_popup.on {
+            display: block;
+            background-color: #fff;
+        }
+
+        .img_wrap {
+            width: 200px;
+            height: 200px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+
+        .btn_close {
+            width: 32px;
+            height: 32px;
+            position: absolute;
+            top: 17px;
+            right: 17px;
+            font-size: 0;
+            border: 0;
+            background: none;
+        }
+        .btn_close:before {
+            content: "";
+            width: 2px;
+            height: 32px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 15px;
+            transform: rotate(45deg);
+        }
+        .btn_close:after {
+            content: "";
+            width: 32px;
+            height: 2px;
+            background-color: #333;
+            position: absolute;
+            top: 15px;
+            left: 0;
+            transform: rotate(45deg);
+        }
+
+        .btn_today_close {
+            width: 100%;
+            height: 45px;
+            background-color: #333;
+            text-align: center;
+            color: #fff;
+            font-size: 14px;
+            display: block;
+        }
+        .btn_today_close span {
+            display: block;
+            line-height: 40px;
+            opacity: 0.8;
+            text-indent: 0;
+        }
+        
+        .popup.cookieInfo {
+            display: none;
+        }
+        .popup.cookieInfo.on {
+            display: block;
+            background-color: #fff;
+        }
+    </style>
+    
+</head>
+<body>
+    
+    <div class="main_popup">
+        <div class="layer_cont">
+            <div class="img_wrap">
+                팝업 콘텐츠
+            </div>
+            <div class="btn_wrap">
+                <!-- 오늘 하루 보지 않기 --->
+                <button class="btn_today_close"><span>오늘 하루 보지 않기</span></button>
+                <!-- 그냥 닫기 --->
+                <button class="btn_close">close</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        var toggleMainPopup = function() {
+  
+            /* 쿠키 제어 함수 정의 */
+            var handleCookie = {
+                // 쿠키 쓰기
+                // 이름, 값, 만료일
+                setCookie: function (name, val, exp) {
+                var date = new Date();
+                
+                // 만료 시간 구하기(exp를 ms단위로 변경)
+                date.setTime(date.getTime() + exp * 24 * 60 * 60 * 1000);
+                console.log(name + "=" + val + ";expires=" + date.toUTCString() + ";path=/");
+                
+                // 실제로 쿠키 작성하기
+                document.cookie = name + "=" + val + ";expires=" + date.toUTCString() + ";";
+                },
+                // 쿠키 읽어오기(정규식 이용해서 가져오기)
+                getCookie: function (name) {
+                var value = document.cookie.match("(^|;) ?" + name + "=([^;]*)(;|$)");
+                return value ? value[2] : null;
+                }
+            };
+            console.log(handleCookie.getCookie("today"));
+            
+            // 쿠키 읽고 화면 보이게
+            if (handleCookie.getCookie("today") == "y") {
+                $(".main_popup").removeClass("on");
+            } else {
+                $(".main_popup").addClass("on");
+            }
+
+            // 오늘하루 보지 않기 버튼
+            $(".main_popup").on("click", ".btn_today_close", function () {
+                handleCookie.setCookie("today", "y", 1);
+                $(this).parents(".main_popup.on").removeClass("on");
+            });
+
+            // 일반 버튼
+            $(".main_popup").on("click", ".btn_close", function () {
+                $(this).parents(".main_popup.on").removeClass("on");
+            });
+        }
+
+        $(function() {
+            toggleMainPopup();
+        });
+    </script>
+
+    <div class="navWrap"> 
+        <h1><a href="index.html"><img src="img/starship-logo.png" alt="스타쉽 엔터테인먼트"></a></h1>
+        
+         <button type="button" class="navBtn">
+             <span>메뉴</span>
+             <span></span>
+             <span></span>
+         </button>
+         <nav>
+             <h2 class="blind">주메뉴</h2> 
+             <ul class="navTop">
+                <li><a href="company.html"><span>Company</span></a>
+                    <ul>
+                        <li><a href="company.html">회사소개</a></li>
+                        <li><a href="#">연혁</a></li>
+                        <li><a href="#">사업현황</a></li>
+                    </ul>
+                </li>
+                <li><a href="artist.html"><span>Artist</span></a>
+                </li>
+                <li><a href="prcenter.html"><span>PR Center</span></a>
+                    <ul>
+                        <li><a href="prcenter.html">영상</a></li>
+                        <li><a href="#">공지</a></li>
+                    </ul>
+                </li>
+                <li><a href="contact.html"><span>Contact</span></a></li>
+            </ul>
+        </nav>
+        
+    </div>
+
+    <section class="border">
+        <h3>color, 가로세로 사이즈 변수 사용, 스타일그룹 믹스인</h3>
+        <div class="bdbox"></div>
+        <div class="bdbox"></div>
+    </section>
+
+    <hr>
+
+    <section>
+        <h3>entity 사용, 폰트스타일그룹 사용</h3>
+        <div class="repeat">
+            <p>&#175;는 Entity이다. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi iste qui porro corrupti excepturi ducimus consectetur modi distinctio? Illo, ad molestias? Nisi recusandae perspiciatis corporis iusto id magnam incidunt exercitationem.</p>
+        </div>
+        <div class="repeat">
+            <p class="fs-small">Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus debitis minus molestiae illo tempora sit iusto quo distinctio, sint cupiditate nam officiis neque unde? Ullam cumque maiores temporibus dicta repellendus.</p>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="imgbox">
+        <h3>이미지 백그라운드 url 변수 사용</h3>
+    </section>
+
+    <hr>
+
+    <section class="PAmixin">
+        <h3>포지션 함수 믹스인</h3>
+        <p class="floatP">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo aut repellat maiores consectetur cum, reprehenderit, expedita nam facere, voluptatibus ad unde rem. Blanditiis expedita laudantium doloremque veniam eum rem amet?</p>
+        <div></div>
+    </section>
+
+    <hr>
+
+    <section class="splttxtc">
+        <p data-split="split text color">split text color</p>
+    </section>
+
+    <hr>
+
+    <section class="flex-try">
+        <div class="container">
+            <div class="item">One</div>
+            <div class="item">Two</div>
+            <div class="item">Three</div>
+        </div>
+    </section>
+
+    <hr>
+
+    <section class="pholder">
+        <input type="text" placeholder="글을 작성해주세요">
+        <p>감사합니다!</p>
+    </section>
+
+    <hr>
+
+    <section class="isNan">
+        <input type="text" class="isNanInput" placeholder="나이를 입력하세요">
+        <button type="button" onclick="clicked();">입력</button>
+
+        <script>
+            function clicked() {
+                const what = document.querySelector('.isNanInput').value;
+                const age = parseInt(what);
+
+                if(isNaN(age)) {
+                    alert("Please write a 'only number'");
+                } else {
+                    alert("Thank you");
+                }
+                // return isNaN(age) ? alert("Please write a 'only number'") : alert("Thank you");
+            }
+        </script>
+    </section>
+
+    <hr>
+
+    <section class="txtunwrap">
+        <div class="one">
+            <div class="two">
+                <h2>Hello</h2>
+                <p>안녕하세요</p>
+            </div>
+            <button type="button" class="btn_excng">p내용 exchange</button>
+            <button type="button" class="deleteDiv">DIV 태그 삭제</button>
+            <button type="button" class="deleteSelf">p태그 자체 삭제</button>
+        </div>
+        <script>
+            // jquery 사용
+            $(document).ready(function(){
+                const pcont = $('.txtunwrap .two p').text();
+                const exchange = $('<span style="display: block;">안녕</span>' + pcont);
+                
+                $('.txtunwrap .one .btn_excng').click(function(){
+                    $('.txtunwrap .two p').html(exchange);
+                });
+                $('.txtunwrap .one .deleteSelf').click(function(){
+                    $('.txtunwrap .one p').contents().unwrap();     // 태그 안에 요소들은 그대로 두고 태그만 삭제
+                });
+                $('.txtunwrap .one .deleteDiv').click(function(){
+                    $('.txtunwrap .one p').unwrap();                // 태그의 바로 상위 태그 삭제
+                });
+            });
+        </script>
+        <style>
+            .txtunwrap .one button {
+                display: flex; align-items: flex-start; margin-bottom: 10px;
+                text-indent: 0; padding: 10px;
+                border: 1px solid #aaa; cursor: pointer;
+            }
+        </style>
+    </section>
+
+    <hr>
+
+    <section class="numberUpDown">
+        <div class="number-wrap">
+            <input type="number" id="result" value="0" onkeyup="keyevent(this);" />
+            <button type='button' class="btn-plus_nb" onclick='count("plus")'>+</button>
+            <button type='button' class="btn-minus_nb" onclick='count("minus")'>-</button>
+        </div>
+        <script>           
+            function count(type)  {
+                // 결과를 표시할 element
+                //   const resultElement = document.getElementById('result').value;
+                
+                // 현재 input 값
+                let number = document.getElementById('result').value;
+                
+                // 숫자제한 없는 경우
+                if(type === 'plus') {
+                    number = parseInt(number) + 1;
+                }else if(type === 'minus')  {
+                    number = parseInt(number) - 1;
+                }
+                                            
+                // 더하기/빼기 뷰순서가 숫자범위 제한이 있는 경우 해당 숫자로 변경 ex) 0 ~ 12
+                // if(type === 'plus' && number >= 12) {
+                //     number = parseInt(12);
+                // } else if(type === 'plus' && number < 12)  {
+                //     number = parseInt(number) + 1;
+                // } else if(type === 'minus' && number > 0)  {
+                //     number = parseInt(number) - 1;
+                // } else if(type === 'minus' && number <= 0)  {
+                //     number = parseInt(0);
+                // }
+                // function keyevent(){
+                //     const valueX = document.getElementById('result').value;
+                    
+                //     if(valueX >= 12) {
+                //         document.getElementById('result').value = parseInt(12);
+                //     } else if(valueX <= 0)  {
+                //         document.getElementById('result').value = parseInt(0);
+                //     }
+                // }
+                                
+                // 더하기/빼기 뷰순서가 마이너스 불가능한 경우
+                // if(type === 'plus') {
+                //     number = parseInt(number) + 1;
+                // } else if(type === 'minus' && number > 0)  {
+                //     number = parseInt(number) - 1;
+                // } else if(type === 'minus' && number <= 0)  {
+                //     number = 0;
+                // }
+                
+                // 결과 출력
+                document.getElementById('result').value = number;
+            }
+        </script>
+        <!-- <div class="qty-form number-wrap">
+            <input type="number" class="qty-value" value="0" name="qty" />
+            <button type="button" class="btn-plus_nb" onClick="javascript:this.form.qty.value++;">증가</button>
+            <button type="button" class="btn-minus_nb" onClick="javascript:this.form.qty.value--;">감소</button>
+        </div> -->
+
+    </section>
+
+    <hr>
+
+    <section class="jstree">
+        <ul>
+            <li><span>첫번째</span>
+                <ul>
+                    <li><span>11111</span>
+                        <ul>
+                            <li><span>one</span></li>
+                            <li><span>two</span></li>
+                            <li><span>three</span></li>
+                        </ul>
+                    </li>
+                    <li><span>2222222</span>
+                        <ul>
+                            <li><span>원</span></li>
+                            <li><span>투</span></li>
+                            <li><span>쓰리</span>
+                                <ul>
+                                    <li><span>원</span></li>
+                                    <li><span>투</span></li>
+                                    <li><span>쓰리</span>
+                                        <ul>
+                                            <li><span>원</span></li>
+                                            <li><span>투</span></li>
+                                            <li><span>쓰리</span></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li><span>두번째</span></li>
+        </ul>
+        <script>
+            $(document).ready(function(){
+                $('.jstree').jstree({
+                    "checkbox" : {
+                        "keep_selected_style" : false
+                    },
+                    "plugins" : [ "checkbox" ]
+                });
+            });
+        </script>
+    </section>
+    
+    <hr>
+
+    <section class="svgbox">
+        <svg width="525px" height="150px" viewBox="0 0 525 5">
+            <text>Text SVG CODE</text>
+        </svg>
+        <!-- <svg id="b6c59f93-86ec-4195-acc2-24789cdbe1bf" data-name="레이어 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 601 335.32">
+            <defs>
+                <style>
+                    .layer1 {fill:#0d81ff;}
+                    .layer2 {fill:#fff;stroke:#0074dd;stroke-miterlimit:10;stroke-width:3px;}
+                </style>
+            </defs>
+            <path class="layer1" d="M864,881H263V587s16-36,81-24,63,68,141,77,112-43,173-47,54,20,111,32,95-38,95-38Z" transform="translate(-263 -545.68)"/>
+            <polygon class="layer2" points="261 64.32 294.5 82.82 340.5 75.82 378 50.32 391 3.32 330.31 41.32 261 64.32"/>
+            <polygon class="layer2" points="312.77 3.32 352.76 27.26 330.31 41.32 304.36 49.93 312.77 3.32"/>
+        </svg> -->
+    </section>
+    <style>
+        .svgbox {
+            padding: 0; margin: 0;
+            width: 100%; height: 100%;
+            background: #16345A;
+        }
+        .svgbox svg text {
+            font-size: 6em; line-height: 2; font-weight: bold;
+            fill:transparent;
+            stroke-dasharray: 326px;
+            /* stroke: #f1c164; stroke-width: 2px; */
+                stroke-width: 7px;
+            stroke-linecap: round;
+            animation: stroke 2s linear forwards;
+
+        }
+        @keyframes stroke {
+            /* 0% { stroke-dashoffset: 326px; }
+            100% { stroke-dashoffset: 0px; } */
+            0%   {
+                stroke:#F1C164;
+                stroke-width: 7px;
+                stroke-dashoffset: 326px;
+            }
+            70% {
+                fill: transparent;
+            }
+            98% {
+                stroke:#F1C164;
+            }
+            100% {
+                fill: #F1C164;
+            }
+        }
+        /* svg {
+            width: 100%; height: 500px;
+        }
+        svg .layer1 {
+            stroke-dasharray: 120; stroke-dashoffset: -120;
+            animation: layer1move 5s infinite ease-in-out;
+        }
+        @keyframes layer1move {
+            from {stroke-dashoffset : -120px;}
+            to {stroke-dashoffset : 0px;}
+        }
+        svg .layer2 {
+            transition: .3s;
+            animation: boat 5s infinite ease-in-out;
+        }
+        @keyframes boat {
+            to {
+                top: 200px;
+            }
+        } */
+
+    </style>
+
+    <hr>
+
+    <section>
+        <button type="button" onclick="closeWin();" style="cursor: pointer; text-indent:0; padding: 5px 10px; border: 1px solid #ddd;">3초 후 창 닫기</button>
+
+        <p>
+            <label for="Timer">남은 시간:</label>
+            <input id="Timer" type="text" value="" readonly/>
+        </p>
+        
+        <script>
+            function closeWin() {
+                timerStart();
+                setTimeout("window.close()",3000);
+            }
+
+            function timerStart() {
+                const Timer=document.getElementById('Timer'); //스코어 기록창
+                let sec = 3;
+
+                Timer.value=sec; 
+                function TIMER(){
+                    PlAYTIME=setInterval(function(){
+                        sec = sec - 1;
+                        Timer.value=sec;
+                        
+                    },1000); //1초마다 
+                }
+                TIMER();
+                setTimeout(function(){
+                    clearInterval(PlAYTIME);
+                },3000);//3초가 되면 타이머를 삭제한다.
+            }
+
+            // 3분 타이머
+            // const Timer=document.getElementById('Timer'); //스코어 기록창-분
+            // let time= 180000;
+            // let min=3;
+            // let sec=60;
+
+            // Timer.value=min+":"+'00'; 
+
+            // function TIMER(){
+            //     PlAYTIME=setInterval(function(){
+            //         time=time-1000; //1초씩 줄어듦
+            //         min=time/(60*1000); //초를 분으로 나눠준다.
+
+            //     if(sec>0){ //sec=60 에서 1씩 빼서 출력해준다.
+            //             sec=sec-1;
+            //             Timer.value=Math.floor(min)+':'+sec; //실수로 계산되기 때문에 소숫점 아래를 버리고 출력해준다.
+                    
+            //         }
+            //         if(sec===0){
+            //             // 0에서 -1을 하면 -59가 출력된다.
+            //             // 그래서 0이 되면 바로 sec을 60으로 돌려주고 value에는 0을 출력하도록 해준다.
+            //             sec=60;
+            //             Timer.value=Math.floor(min)+':'+'00'
+            //         }     
+            
+            //     },1000); //1초마다 
+            // }
+
+            // TIMER();
+            // setTimeout(function(){
+            //     clearInterval(PlAYTIME);
+            // },180000);//3분이 되면 타이머를 삭제한다.
+
+        </script>
+    </section>
+
+    <hr>
+
+    <section>
+
+        <canvas id="my-canvas" width="350" height="350"></canvas>
+        <p class="log"></p>
+        
+        <script>
+            // 캔버스 요소 참조
+            const canvas = document.querySelector('#my-canvas');
+            // 콘텍스트 가져오기
+            const context = canvas.getContext('2d');
+
+            // Image 인스턴스 생성
+            const img = new Image();
+            // 이미지 로딩 후 처리
+            img.onload = () => {
+                // 콘텍스트로 캔버스에 그리기
+                context.drawImage(img, 0, 0);
+            };
+            // 이미지 로딩 시작
+            img.src = 'img/img.png';
+
+            // 마우스 이동 시
+            canvas.addEventListener('mousemove', (event) => {
+                // 마우스 좌표 가져오기
+                const x = event.layerX;
+                const y = event.layerY;
+                // imageData 가져오기
+                const imageData = context.getImageData(x, y, 1, 1);
+                // 화소 배열 가져오기
+                const data = imageData.data;
+                const r = data[0];  // 빨
+                const g = data[1];  // 녹
+                const b = data[2];  // 파
+                const a = data[3];  // 알파
+                // 문자열로 색 정보 다루기
+                const color = `rgba(${r}, ${g}, ${b}, ${a})`;
+                
+                const el = document.querySelector('.log');
+                // 배경색 지정
+                el.style.background = color;
+                // 정보를 문자로 표시
+                el.textContent = color;
+                // alert(imageData);
+            });
+        </script>
+
+        <p>**배경이미지 색상 추출 못함..</p>
+        <script>
+            function canvas_view(imageObj){
+                var canvas = imageObj.nextSibling.nextSibling;
+                
+                // # canvas의 크기를 이미지와 동일하게 설정
+                canvas.height = imageObj.height;
+                canvas.width = imageObj.width;
+                
+                // # canvas에 이미지 복제
+                var ctx= canvas.getContext("2d");
+                ctx.drawImage(imageObj, 0, 0, imageObj.width, imageObj.height);
+                
+                // # 복제된 이미지에 대한 픽셀정보를 가져옴
+                var id= ctx.getImageData(0, 0, canvas.width, canvas.height);
+                // # 픽셀순회
+                for (var i = 0; i < id.data.length; i += 4) {
+                    // # 픽셀값이 (0, 0, 0)일 경우에만 변경
+                    if ( id.data[i] + id.data[i+1] + id.data[i+2] == 0 ){
+                        id.data[i] = 255;
+                        id.data[i+1] = 165;
+                        id.data[i+2] = 0;
+                        id.data[i+3] = 255;
+                    }
+                }
+                    
+                // canvas에 바꾼 rgba정보로 재배치
+                ctx.putImageData(id, 0, 0);
+            }
+        </script>
+    </section>
+
+    <hr>
+
+    <section>
+
+        <ul class="jsMousEvnt" style="font-size: 20px; line-height: 1.4;">
+            <li>list01</li>
+            <li>list02</li>
+            <li>list03</li>
+            <li>list04</li>
+            <li>list05</li>
+        </ul>
+        <script>
+            let ul = document.getElementsByClassName('jsMousEvnt')[0];
+
+            ul.addEventListener("mouseover", function (event) {
+            //highlight the mouseover target
+            event.target.setAttribute("style","color:red; cursor:pointer; background-color:lightgray;");
+
+            }, false);
+
+            ul.addEventListener("mouseout", function (event) {
+            // highlight the mouseout target
+            event.target.style.color = "black";
+            event.target.style.backgroundColor = "transparent";
+            }, false);
+        </script>
+    </section>
+
+    <hr>
+
+    <section>
+        <style>
+            .flag {
+                margin-top: 10px;
+                width: 100px;
+                height: 0px;
+                box-sizing: border-box;
+                position: relative;
+                background: brown;
+
+            }
+            .flag:after {
+                content: '';
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                width: 0;
+                height: 0;
+                border-top: 25px solid transparent;
+                border-bottom: 25px solid transparent;
+                border-right: 50px solid #aaa;
+            }
+        </style>
+        <div class="flag"></div>
+    </section>
+
+    <hr>
+
+    <section>
+        <div class="scene">
+            <!-- <div class="panel"></div> -->
+            <img class="panel1" src="img/img.png" alt="">
+            <img class="panel2" src="img/img.png" alt="">
+        </div>
+        <style>
+            .scene {
+                
+                width: 200px;
+                height: 200px;
+                border: 1px solid #CCC;
+                margin: 40px;
+                /* perspective property */
+                perspective: 200px;
+            }
+
+            .panel1 {
+                width: 100%;
+                height: 100%;
+                background: blue;
+                transform: rotateX(-60deg);
+                transform-origin: 50% 50%;
+            }
+            .panel2 {
+                width: 100%;
+                height: 100%;
+                background: blue;
+                transform: rotateX(120deg);
+                transform-origin: 0% 0%;
+            }
+        </style>
+        <script>
+
+        </script>
+    </section>
+
+    <hr>
+
+    <section>
+        <div class="menuBtn">
+            <span class="m-1"></span>
+            <span class="m-2"></span>
+            <span class="m-3"></span>
+            <span class="m-4"></span>
+        </div>
+        <style>
+            .menuBtn {
+                position: relative;
+                width: 40px;
+                height: 40px;
+                background-color: #f0f0f0;
+                cursor: pointer;
+            }
+
+            .menuBtn span {
+                display: inline-block;
+                position: absolute;
+                width: 20px;
+                height: 3px;
+                background-color: #000;
+                border-radius: 3px;
+                transform-origin: 0% 0%;
+                transition: .3s;
+            }
+            .menuBtn .m-1 {
+                top: 10px;
+                left: 11px;
+                transform: rotate(90deg);
+            }
+            .menuBtn .m-2 {
+                top: 10px;
+                left: 11px;
+                transform: rotate(60deg);
+            }
+            .menuBtn .m-3 {
+                top: 27px;
+                left: 17.5px;
+                transform: rotate(-58deg);
+            }
+            .menuBtn .m-4 {
+                top: 10px;
+                left: 31.5px;
+                transform: rotate(90deg);
+            }
+            .menuBtn.menuOn .m-1 {
+                top: 16px;
+                left: 9px;
+                width: 10px;
+                height: 2px;
+                transform: rotate(-48deg);
+            }
+            .menuBtn.menuOn .m-2 {
+                top: 15px;
+                left: 11px;
+                width: 10px;
+                height: 2px;
+                transform: rotate(50deg);
+            }
+            .menuBtn.menuOn .m-3 {
+                top: 15px;
+                left: 11px;
+                width: 16px;
+                height: 3px;
+                transform: rotate(0deg);
+            }
+            .menuBtn.menuOn .m-4 {
+                top: 15px;
+                left: 29px;
+                width: 15px;
+                transform: rotate(90deg);
+            }
+        </style>
+        <script>
+            $('.menuBtn').click(function(){
+                $(this).toggleClass('menuOn');
+            });
+        </script>
+    </section>
+
+    <hr>
+
+    <section>
+        
+        <ul id="sortable">
+            <li>1 Lorem, ipsum dolor.</li>
+            <li>2 Lorem, ipsum.</li>
+            <li>3 Lorem ipsum dolor sit amet.</li>
+            <li>4 Lorem.</li>
+            <li>5 Lorem ipsum dolor sit.</li>
+        </ul>
+
+        <style>
+            #sortable li {
+                margin: 5px 0;
+                font-size: 16px;
+                line-height: 1.5;
+                cursor: pointer;
+            }
+            #sortable li.selected {
+                color: #fff;
+                background-color: darkblue;
+            }
+            #sortable li:hover {
+                background-color: skyblue;
+            }
+        </style>
+        <script>
+            new Sortable(sortable, {
+                multiDrag: true, // Enable multi-drag
+                selectedClass: 'selected', // The class applied to the selected items
+                fallbackTolerance: 3, // So that we can select items on mobile
+                animation: 150
+            });
+        </script>
+    </section>
+
+    <hr>
+
+    <section>
+        <style>
+            .ico-wt {
+                width: 10%;
+                height: 10%;
+            }
+            .ico-wt .before {
+                opacity: 0;
+                animation: beforeHide 2s infinite linear alternate-reverse backwards;
+            }
+            .ico-wt .after {
+                opacity: 0;
+                animation: afterShow 2s infinite linear alternate-reverse backwards;
+            }
+            @keyframes beforeHide {
+                0%   {opacity: 1;}
+                100% {opacity: 0;}
+            }
+            @keyframes afterShow {
+                0%   {opacity: 0;}
+                100% {opacity: 1;}
+            }
+        </style>
+        <svg class="ico-wt" width="310" height="310" viewBox="0 0 310 310" fill="none">
+            <path class="before" d="M193.827 266.488L193.276 266.467L192.727 266.506C192.488 266.522 192.246 266.531 192 266.531H107C106.52 266.531 106.053 266.498 105.6 266.435L105.245 266.386L104.888 266.362C65.3018 263.739 34 230.787 34 190.532C34 148.558 68.0266 114.531 110 114.531C138.787 114.531 163.851 130.533 176.758 154.175L180.157 160.402L187.158 159.25C190.029 158.778 192.982 158.531 196 158.531C225.824 158.531 250 182.708 250 212.531C250 242.355 225.824 266.531 196 266.531C195.274 266.531 194.547 266.517 193.827 266.488Z" stroke="#ADB1BA" stroke-width="20"/>
+            <path class="before" d="M150.7 127.89C151.86 122.918 174.4 109.99 198.433 122.59C222.466 135.19 217.659 160.048 215.833 166.014" stroke="#ADB1BA" stroke-width="20"/>
+            <path class="before" d="M150 96.4453L137.076 67.1714" stroke="#ADB1BA" stroke-width="20" stroke-linecap="round"/>
+            <path class="before" d="M245.193 151.812L276.103 143.53" stroke="#ADB1BA" stroke-width="20" stroke-linecap="round"/>
+            <path class="before" d="M210 96.5469L227 67.102" stroke="#ADB1BA" stroke-width="20" stroke-linecap="round"/>
+            
+            <path class="after" d="M73 234L239 234" stroke="black" stroke-width="20" stroke-linecap="round"/>
+            <path class="after" d="M83 264L229 264" stroke="black" stroke-width="20" stroke-linecap="round"/>
+            <path class="after" d="M58.312 126.855L64.7813 125.134L65.6555 118.497C70.5592 81.2696 102.432 52.5312 141 52.5312C169.787 52.5312 194.851 68.5334 207.758 92.1745L211.157 98.4017L218.158 97.2502C221.029 96.778 223.982 96.5313 227 96.5313C256.824 96.5313 281 120.707 281 150.531C281 180.355 256.824 204.531 227 204.531H226.691H226.381H226.072H225.763H225.453H225.144H224.835H224.526H224.216H223.907H223.598H223.288H222.979H222.67H222.36H222.051H221.742H221.432H221.123H220.814H220.504H220.195H219.886H219.576H219.267H218.958H218.648H218.339H218.03H217.72H217.411H217.102H216.792H216.483H216.174H215.864H215.555H215.245H214.936H214.627H214.317H214.008H213.699H213.389H213.08H212.77H212.461H212.152H211.842H211.533H211.223H210.914H210.605H210.295H209.986H209.676H209.367H209.058H208.748H208.439H208.129H207.82H207.511H207.201H206.892H206.582H206.273H205.963H205.654H205.345H205.035H204.726H204.416H204.107H203.797H203.488H203.179H202.869H202.56H202.25H201.941H201.631H201.322H201.012H200.703H200.394H200.084H199.775H199.465H199.156H198.846H198.537H198.227H197.918H197.608H197.299H196.989H196.68H196.37H196.061H195.751H195.442H195.132H194.823H194.514H194.204H193.895H193.585H193.276H192.966H192.657H192.347H192.038H191.728H191.419H191.109H190.8H190.49H190.181H189.871H189.561H189.252H188.942H188.633H188.323H188.014H187.704H187.395H187.085H186.776H186.466H186.157H185.847H185.538H185.228H184.919H184.609H184.3H183.99H183.68H183.371H183.061H182.752H182.442H182.133H181.823H181.514H181.204H180.895H180.585H180.275H179.966H179.656H179.347H179.037H178.728H178.418H178.109H177.799H177.489H177.18H176.87H176.561H176.251H175.942H175.632H175.322H175.013H174.703H174.394H174.084H173.775H173.465H173.155H172.846H172.536H172.227H171.917H171.608H171.298H170.988H170.679H170.369H170.06H169.75H169.44H169.131H168.821H168.512H168.202H167.892H167.583H167.273H166.964H166.654H166.344H166.035H165.725H165.416H165.106H164.796H164.487H164.177H163.868H163.558H163.248H162.939H162.629H162.32H162.01H161.7H161.391H161.081H160.771H160.462H160.152H159.843H159.533H159.223H158.914H158.604H158.294H157.985H157.675H157.366H157.056H156.746H156.437H156.127H155.817H155.508H155.198H154.889H154.579H154.269H153.96H153.65H153.34H153.031H152.721H152.411H152.102H151.792H151.483H151.173H150.863H150.554H150.244H149.934H149.625H149.315H149.005H148.696H148.386H148.077H147.767H147.457H147.148H146.838H146.528H146.219H145.909H145.599H145.29H144.98H144.67H144.361H144.051H143.741H143.432H143.122H142.812H142.503H142.193H141.884H141.574H141.264H140.955H140.645H140.335H140.026H139.716H139.406H139.097H138.787H138.477H138.168H137.858H137.548H137.239H136.929H136.619H136.31H136H135.69H135.381H135.071H134.761H134.452H134.142H133.832H133.523H133.213H132.903H132.594H132.284H131.974H131.665H131.355H131.045H130.736H130.426H130.116H129.807H129.497H129.187H128.878H128.568H128.258H127.949H127.639H127.329H127.02H126.71H126.4H126.091H125.781H125.471H125.162H124.852H124.542H124.233H123.923H123.613H123.304H122.994H122.684H122.375H122.065H121.755H121.446H121.136H120.826H120.517H120.207H119.897H119.588H119.278H118.969H118.659H118.349H118.04H117.73H117.42H117.111H116.801H116.491H116.182H115.872H115.562H115.253H114.943H114.633H114.324H114.014H113.704H113.395H113.085H112.775H112.466H112.156H111.846H111.537H111.227H110.917H110.608H110.298H109.988H109.679H109.369H109.059H108.75H108.44H108.13H107.821H107.511H107.201H106.892H106.582H106.272H105.963H105.653H105.344H105.034H104.724H104.415H104.105H103.795H103.486H103.176H102.866H102.557H102.247H101.937H101.628H101.318H101.008H100.699H100.389H100.08H99.7699H99.4602H99.1506H98.8409H98.5313H98.2217H97.912H97.6024H97.2927H96.9831H96.6735H96.3638H96.0542H95.7446H95.4349H95.1253H94.8157H94.506H94.1964H93.8868H93.5771H93.2675H92.9579H92.6482H92.3386H92.029H91.7194H91.4097H91.1001H90.7905H90.4809H90.1712H89.8616H89.552H89.2424H88.9328H88.6231H88.3135H88.0039H87.6943H87.3847H87.0751H86.7655H86.4558H86.1462H85.8366H85.527H85.2174H84.9078H84.5982H84.2886H83.979H83.6694H83.3598H83.0502H82.7406H82.431H82.1214H81.8118H81.5022H81.1926H80.883H80.5734H80.2638H79.9542H79.6446H79.335H79.0254H78.7158H78.4062H78.0966H77.7871H77.4775H77.1679H76.8583H76.5487H76.2391H75.9296H75.62H75.3104H75.0008H74.6913H74.3817H74.0721H73.7625H73.453H73.1434H72.8338H72.5243H72.2147H71.9051H71.5956H71.286H70.9764H70.6669H70.3573H70.0478H69.7382H69.4287H69.1191H68.8096H68.5C46.6844 204.531 29 186.847 29 165.031C29 146.75 41.4278 131.346 58.312 126.855Z" stroke="black" stroke-width="20"/>
+        </svg>
+        <style>
+            .sunny circle {
+                transform-origin: center;
+                animation: sunScale 1.2s infinite linear alternate-reverse;
+            }
+            @keyframes sunScale {
+                0%   {transform: scale(0.9);}
+                100% {transform: scale(1);}
+            }
+            .sunny path {
+                stroke-dasharray: 50;
+                stroke-dashoffset: 30;
+                animation: ani1 1.2s infinite linear alternate-reverse;
+            }
+            @keyframes ani1 {
+                0%   {stroke-dashoffset: 50;}
+                100% {stroke-dashoffset: 0;}
+            }
+            
+            @keyframes cloudy {
+                0%   {transform: translateX(-10px)}
+                100% {transform: translateX(10px)}
+            }
+            @keyframes rainy {
+                0%   {transform: translateY(-10px); opacity: 0;}
+                100% {transform: translateY(10px); opacity: 1;}
+            }
+            .cloud {
+                width: 10%;
+                height: 10%;
+            }
+            .cloud .line1 {
+                animation: cloudy 1.2s infinite linear alternate-reverse backwards;
+            }
+            .cloud .line2 {
+                animation: cloudy 1s 0.8s infinite linear alternate-reverse backwards;
+            }
+            .rainy .line {
+                transform-origin: center;
+            }
+            .rainy .line1 {
+                animation: rainy 0.8s infinite linear alternate-reverse;
+            }
+            .rainy .line2 {
+                animation: rainy 0.8s 0.8s infinite linear alternate-reverse;
+            }
+            .rainy .line3 {
+                animation: rainy 0.8s 1.2s infinite linear alternate-reverse;
+            }
+            @keyframes snowy {
+                0% {transform: translate(0, 0px) rotate(0deg); opacity: 0;}
+                50% {opacity: 1;}
+                100% {transform: translate(-15px, 25px) rotate(90deg); opacity: 0;}
+            }
+            .snow .path {
+                transition: 0.3s;
+                transform-box: fill-box;
+                transform-origin: 50% 50%;
+            }
+            .snow .path1 {
+                animation: snowy 1.6s infinite backwards;
+            }
+            .snow .path2 {
+                animation: snowy 1.6s 0.4s infinite backwards;
+            }
+            .snow .path3 {
+                animation: snowy 1.6s 0.8s infinite backwards;
+            }
+            @keyframes d-so {
+                0% {transform: translateY(0);}
+                100% {transform: translateY(10px);}
+            }
+            @keyframes d-soM {
+                0% {transform: scaleX(1) translateY(0);}
+                100% {transform: scaleX(0.9) translateY(10px);}
+            }
+            .dust-soso .face {
+                transform-box: fill-box;
+                transform-origin: 50% 50%;
+                animation: d-so 0.8s infinite alternate ease-in-out forwards;
+            }
+            .dust-soso .mouth {
+                animation: d-soM 0.8s infinite alternate ease-in-out forwards;
+            }
+
+            @keyframes ani-yelloDust {
+                0%   {
+                    opacity: 0;
+                    transform: translateX(-10px);
+                    stroke-dashoffset: 400;}
+                100% {
+                    opacity: 1;
+                    transform: translateX(0px);
+                    stroke-dashoffset: 0;}
+            }
+            
+            .yelloDust .wind {
+                stroke-dasharray: 400;
+                stroke-dashoffset: 0;
+                animation: ani-yelloDust 1.6s infinite linear;
+            }
+        </style>
+
+        <svg class="sunny" width="350" height="350" viewBox="0 0 350 350" fill="none">
+            <circle cx="175" cy="175" r="80" stroke="black" stroke-width="16"/>
+            <path d="M174.998 55L174.998 5" stroke="black" stroke-width="16" stroke-linecap="round"/>
+            <path d="M174.998 295L174.998 345" stroke="black" stroke-width="16" stroke-linecap="round"/>
+            <path d="M294.998 175L344.998 175" stroke="black" stroke-width="16" stroke-linecap="round"/>
+            <path d="M55 175L5 175" stroke="black" stroke-width="16" stroke-linecap="round"/>
+            <path d="M259.851 90.1484L295.206 54.7931" stroke="black" stroke-width="16" stroke-linecap="round"/>
+            <path d="M90.1455 259.852L54.7902 295.207" stroke="black" stroke-width="16" stroke-linecap="round"/>
+            <path d="M259.851 259.852L295.206 295.207" stroke="black" stroke-width="16" stroke-linecap="round"/>
+            <path d="M90.1455 90.1484L54.7902 54.7931" stroke="black" stroke-width="16" stroke-linecap="round"/>
+        </svg>
+
+        <svg class="cloud" width="310" height="310" viewBox="0 0 310 310" fill="none">
+            <path class="line1" d="M73 234L239 234" stroke="black" stroke-width="20" stroke-linecap="round"/>
+            <path class="line2" d="M83 264L229 264" stroke="black" stroke-width="20" stroke-linecap="round"/>
+            <path d="M58.312 126.855L64.7813 125.134L65.6555 118.497C70.5592 81.2696 102.432 52.5312 141 52.5312C169.787 52.5312 194.851 68.5334 207.758 92.1745L211.157 98.4017L218.158 97.2502C221.029 96.778 223.982 96.5313 227 96.5313C256.824 96.5313 281 120.707 281 150.531C281 180.355 256.824 204.531 227 204.531H226.691H226.381H226.072H225.763H225.453H225.144H224.835H224.526H224.216H223.907H223.598H223.288H222.979H222.67H222.36H222.051H221.742H221.432H221.123H220.814H220.504H220.195H219.886H219.576H219.267H218.958H218.648H218.339H218.03H217.72H217.411H217.102H216.792H216.483H216.174H215.864H215.555H215.245H214.936H214.627H214.317H214.008H213.699H213.389H213.08H212.77H212.461H212.152H211.842H211.533H211.223H210.914H210.605H210.295H209.986H209.676H209.367H209.058H208.748H208.439H208.129H207.82H207.511H207.201H206.892H206.582H206.273H205.963H205.654H205.345H205.035H204.726H204.416H204.107H203.797H203.488H203.179H202.869H202.56H202.25H201.941H201.631H201.322H201.012H200.703H200.394H200.084H199.775H199.465H199.156H198.846H198.537H198.227H197.918H197.608H197.299H196.989H196.68H196.37H196.061H195.751H195.442H195.132H194.823H194.514H194.204H193.895H193.585H193.276H192.966H192.657H192.347H192.038H191.728H191.419H191.109H190.8H190.49H190.181H189.871H189.561H189.252H188.942H188.633H188.323H188.014H187.704H187.395H187.085H186.776H186.466H186.157H185.847H185.538H185.228H184.919H184.609H184.3H183.99H183.68H183.371H183.061H182.752H182.442H182.133H181.823H181.514H181.204H180.895H180.585H180.275H179.966H179.656H179.347H179.037H178.728H178.418H178.109H177.799H177.489H177.18H176.87H176.561H176.251H175.942H175.632H175.322H175.013H174.703H174.394H174.084H173.775H173.465H173.155H172.846H172.536H172.227H171.917H171.608H171.298H170.988H170.679H170.369H170.06H169.75H169.44H169.131H168.821H168.512H168.202H167.892H167.583H167.273H166.964H166.654H166.344H166.035H165.725H165.416H165.106H164.796H164.487H164.177H163.868H163.558H163.248H162.939H162.629H162.32H162.01H161.7H161.391H161.081H160.771H160.462H160.152H159.843H159.533H159.223H158.914H158.604H158.294H157.985H157.675H157.366H157.056H156.746H156.437H156.127H155.817H155.508H155.198H154.889H154.579H154.269H153.96H153.65H153.34H153.031H152.721H152.411H152.102H151.792H151.483H151.173H150.863H150.554H150.244H149.934H149.625H149.315H149.005H148.696H148.386H148.077H147.767H147.457H147.148H146.838H146.528H146.219H145.909H145.599H145.29H144.98H144.67H144.361H144.051H143.741H143.432H143.122H142.812H142.503H142.193H141.884H141.574H141.264H140.955H140.645H140.335H140.026H139.716H139.406H139.097H138.787H138.477H138.168H137.858H137.548H137.239H136.929H136.619H136.31H136H135.69H135.381H135.071H134.761H134.452H134.142H133.832H133.523H133.213H132.903H132.594H132.284H131.974H131.665H131.355H131.045H130.736H130.426H130.116H129.807H129.497H129.187H128.878H128.568H128.258H127.949H127.639H127.329H127.02H126.71H126.4H126.091H125.781H125.471H125.162H124.852H124.542H124.233H123.923H123.613H123.304H122.994H122.684H122.375H122.065H121.755H121.446H121.136H120.826H120.517H120.207H119.897H119.588H119.278H118.969H118.659H118.349H118.04H117.73H117.42H117.111H116.801H116.491H116.182H115.872H115.562H115.253H114.943H114.633H114.324H114.014H113.704H113.395H113.085H112.775H112.466H112.156H111.846H111.537H111.227H110.917H110.608H110.298H109.988H109.679H109.369H109.059H108.75H108.44H108.13H107.821H107.511H107.201H106.892H106.582H106.272H105.963H105.653H105.344H105.034H104.724H104.415H104.105H103.795H103.486H103.176H102.866H102.557H102.247H101.937H101.628H101.318H101.008H100.699H100.389H100.08H99.7699H99.4602H99.1506H98.8409H98.5313H98.2217H97.912H97.6024H97.2927H96.9831H96.6735H96.3638H96.0542H95.7446H95.4349H95.1253H94.8157H94.506H94.1964H93.8868H93.5771H93.2675H92.9579H92.6482H92.3386H92.029H91.7194H91.4097H91.1001H90.7905H90.4809H90.1712H89.8616H89.552H89.2424H88.9328H88.6231H88.3135H88.0039H87.6943H87.3847H87.0751H86.7655H86.4558H86.1462H85.8366H85.527H85.2174H84.9078H84.5982H84.2886H83.979H83.6694H83.3598H83.0502H82.7406H82.431H82.1214H81.8118H81.5022H81.1926H80.883H80.5734H80.2638H79.9542H79.6446H79.335H79.0254H78.7158H78.4062H78.0966H77.7871H77.4775H77.1679H76.8583H76.5487H76.2391H75.9296H75.62H75.3104H75.0008H74.6913H74.3817H74.0721H73.7625H73.453H73.1434H72.8338H72.5243H72.2147H71.9051H71.5956H71.286H70.9764H70.6669H70.3573H70.0478H69.7382H69.4287H69.1191H68.8096H68.5C46.6844 204.531 29 186.847 29 165.031C29 146.75 41.4278 131.346 58.312 126.855Z" stroke="black" stroke-width="20"/>
+        </svg>
+          
+        <svg class="rainy" width="310" height="310" viewBox="0 0 310 310" fill="none">
+            <g clip-path="url(#clip0_2132_494)">
+                <path d="M228.705 214.512C228.705 214.512 240.738 209.776 247.353 204.962C256.521 198.291 261.829 191.777 266.606 183.231C271.384 174.686 274.258 165.208 275.032 155.448C275.806 145.689 274.462 135.877 271.092 126.685C267.722 117.492 262.405 109.137 255.505 102.191C249.287 95.9025 241.882 90.9113 233.72 87.5067C225.558 84.102 216.802 82.3515 207.958 82.3567C204.273 82.3558 200.594 82.6568 196.958 83.2567C189.306 69.1419 178.063 57.2983 164.364 48.9237C152.164 41.4772 138.363 37.0504 124.108 36.0111C109.853 34.9719 95.5561 37.3503 82.4053 42.9487C77.0268 45.241 71.8839 48.0509 67.0493 51.3387C53.9673 60.2475 43.4265 72.4045 36.4612 86.6168C29.4959 100.829 26.3456 116.608 27.3195 132.405C28.2933 148.203 33.3578 163.475 42.0159 176.725C50.674 189.974 62.6282 200.744 76.7053 207.979" stroke="#8BA0B5" stroke-width="20" stroke-linecap="round"/>
+                <path class="line line1" d="M199 245L199 169" stroke="#8BA0B5" stroke-width="20" stroke-linecap="round"/>
+                <path class="line line2" d="M154 267L154 191" stroke="#8BA0B5" stroke-width="20" stroke-linecap="round"/>
+                <path class="line line3" d="M109 245L109 169" stroke="#8BA0B5" stroke-width="20" stroke-linecap="round"/>
+            </g>
+        </svg>
+
+        <svg class="snow" width="310" height="310" viewBox="0 0 310 310" fill="none">
+            <g clip-path="url(#clip0_2138_450)">
+                <path d="M232.5 203.715C232.5 203.715 245.315 198.424 251.148 194.165C259.056 188.393 265.624 180.98 270.401 172.435C275.179 163.889 278.053 154.411 278.827 144.652C279.601 134.892 278.257 125.08 274.887 115.888C271.516 106.696 266.2 98.3402 259.3 91.3938C253.082 85.1056 245.677 80.1145 237.515 76.7098C229.353 73.3051 220.597 71.5546 211.753 71.5598C208.068 71.5589 204.389 71.8599 200.753 72.4598C193.101 58.345 181.858 46.5014 168.159 38.1268C155.959 30.6804 142.158 26.2535 127.903 25.2143C113.648 24.175 99.3511 26.5535 86.2002 32.1518C80.8217 34.4442 75.6788 37.2541 70.8442 40.5418C57.7623 49.4506 47.2214 61.6077 40.2561 75.8199C33.2909 90.0322 30.1406 105.811 31.1144 121.609C32.0882 137.406 37.1527 152.679 45.8108 165.928C54.4689 179.177 66.4231 189.947 80.5002 197.182" stroke="#D8DCDF" stroke-width="20"/>
+                <path class="path path1" fill-rule="evenodd" clip-rule="evenodd" d="M113.719 271.76L109.855 270.724C107.721 270.152 106.455 267.958 107.027 265.824L110.989 251.048L103.458 255.394C101.544 256.498 99.0979 255.842 97.9935 253.929L95.9938 250.464C94.8894 248.55 95.5453 246.104 97.4589 244.999L106.457 239.806L90.859 235.624C88.725 235.052 87.4589 232.858 88.031 230.724L89.067 226.86C89.6392 224.726 91.833 223.46 93.967 224.032L108.273 227.868L103.999 220.463C102.895 218.55 103.551 216.103 105.464 214.999L108.929 212.999C110.843 211.895 113.289 212.551 114.394 214.464L118.766 222.04L122.567 207.864C123.139 205.73 125.333 204.464 127.467 205.036L131.331 206.072C133.465 206.644 134.731 208.838 134.159 210.972L130.084 226.17L139.037 221.003C140.95 219.899 143.397 220.555 144.501 222.468L146.501 225.933C147.605 227.847 146.949 230.293 145.036 231.397L137.55 235.718L151.927 239.572C154.061 240.145 155.327 242.338 154.755 244.472L153.719 248.336C153.147 250.47 150.953 251.737 148.819 251.164L133.15 246.963L138.39 256.042C139.494 257.956 138.838 260.402 136.925 261.507L133.46 263.506C131.546 264.611 129.1 263.955 127.995 262.041L122.855 253.134L118.619 268.932C118.047 271.066 115.853 272.332 113.719 271.76Z" fill="#D8DCDF"/>
+                <path class="path path2" fill-rule="evenodd" clip-rule="evenodd" d="M165.551 161.341C163.894 158.471 160.224 157.488 157.354 159.145C154.485 160.802 153.501 164.471 155.158 167.341L158.962 173.93H151.354C148.04 173.93 145.354 176.616 145.354 179.93C145.354 183.244 148.04 185.93 151.354 185.93H158.962L155.158 192.518C153.501 195.388 154.485 199.057 157.354 200.714C160.224 202.371 163.894 201.388 165.551 198.518L169.354 191.929L173.158 198.518C174.815 201.388 178.485 202.371 181.354 200.714C184.224 199.057 185.207 195.388 183.551 192.518L179.747 185.93H187.354C190.667 185.93 193.354 183.244 193.354 179.93C193.354 176.616 190.667 173.93 187.354 173.93H179.746L183.551 167.341C185.207 164.471 184.224 160.802 181.354 159.145C178.485 157.488 174.815 158.471 173.158 161.341L169.354 167.929L165.551 161.341Z" fill="#D8DCDF"/>
+                <path class="path path3" fill-rule="evenodd" clip-rule="evenodd" d="M196.987 251.52C193.786 252.378 190.495 250.479 189.637 247.278L189.12 245.347L187.187 245.865C183.986 246.723 180.695 244.824 179.837 241.623C178.979 238.422 180.878 235.131 184.079 234.273L186.012 233.755L185.493 231.822C184.635 228.621 186.534 225.33 189.735 224.472C192.936 223.614 196.227 225.513 197.085 228.714L197.604 230.647L199.535 230.129C202.736 229.271 206.027 231.17 206.885 234.371C207.743 237.572 205.844 240.863 202.643 241.721L200.712 242.239L201.229 244.17C202.087 247.371 200.188 250.662 196.987 251.52Z" fill="#D8DCDF"/>
+            </g>
+        </svg>
+
+        <svg class="dust-soso" width="280" height="280" viewBox="0 0 280 280" fill="none">
+            <g clip-path="url(#clip0_2139_470)">
+                <path d="M270 140C270 211.797 211.797 270 140 270C68.203 270 10 211.797 10 140C10 68.203 68.203 10 140 10C211.797 10 270 68.203 270 140Z" stroke="#333333" stroke-width="20"/>
+                <path class="face" d="M83 135C90.1797 135 96 129.18 96 122C96 114.82 90.1797 109 83 109C75.8203 109 70 114.82 70 122C70 129.18 75.8203 135 83 135Z" fill="#333333"/>
+                <path class="face" d="M197 135C204.18 135 210 129.18 210 122C210 114.82 204.18 109 197 109C189.82 109 184 114.82 184 122C184 129.18 189.82 135 197 135Z" fill="#333333"/>
+                <path class="face mouth" d="M100 202H180" stroke="#333333" stroke-width="16" stroke-linecap="round"/>
+            </g>
+        </svg>
+
+        <svg class="yelloDust" width="310" height="310" viewBox="0 0 310 310" fill="none">
+            <path d="M75.6016 250C81.6767 250 86.6016 245.299 86.6016 239.5C86.6016 233.701 81.6767 229 75.6016 229C69.5264 229 64.6016 233.701 64.6016 239.5C64.6016 245.299 69.5264 250 75.6016 250Z" fill="#DDD0A4"/>
+            <path d="M180.102 66C185.901 66 190.602 61.299 190.602 55.5C190.602 49.701 185.901 45 180.102 45C174.303 45 169.602 49.701 169.602 55.5C169.602 61.299 174.303 66 180.102 66Z" fill="#DDD0A4"/>
+            <path d="M86.1016 104C91.9006 104 96.6016 99.5228 96.6016 94C96.6016 88.4772 91.9006 84 86.1016 84C80.3026 84 75.6016 88.4772 75.6016 94C75.6016 99.5228 80.3026 104 86.1016 104Z" fill="#DDD0A4"/>
+            <path d="M263.602 229C269.124 229 273.602 224.299 273.602 218.5C273.602 212.701 269.124 208 263.602 208C258.079 208 253.602 212.701 253.602 218.5C253.602 224.299 258.079 229 263.602 229Z" fill="#DDD0A4"/>
+            <path d="M235.602 205C241.677 205 246.602 200.299 246.602 194.5C246.602 188.701 241.677 184 235.602 184C229.526 184 224.602 188.701 224.602 194.5C224.602 200.299 229.526 205 235.602 205Z" fill="#DDD0A4"/>
+            <path d="M126.602 234C132.124 234 136.602 229.299 136.602 223.5C136.602 217.701 132.124 213 126.602 213C121.079 213 116.602 217.701 116.602 223.5C116.602 229.299 121.079 234 126.602 234Z" fill="#DDD0A4"/>
+            <path class="wind" d="M58.5908 135.199H129.691C163.627 135.199 170.863 107.501 157.5 95.0006C144.137 82.5002 123.5 91.0004 123.5 103.5" stroke="#DDD0A4" stroke-width="20" stroke-linecap="round"/>
+            <path class="wind" d="M58.5908 195.165H129.691C157.604 195.165 187 191.497 200 201C213 210.502 217.5 229.5 205 243.5C192.5 257.499 171 256 162 243.5C153 230.999 160 217.998 160 217.998" stroke="#DDD0A4" stroke-width="20" stroke-linecap="round"/>
+            <path class="wind" d="M45 163.999H188.611C227.5 163.999 258.118 159.998 266.5 135.499C274.882 111 257.5 84.5001 231.5 83.4999C205.5 82.4996 184.5 102.999 195.5 135.499" stroke="#DDD0A4" stroke-width="20" stroke-linecap="round"/>
+        </svg>
+    </section>
+
+    <hr>
+
+    <section>
+        <style>
+            .btn-snow {
+                font-size: 16px;
+                color: #000;
+                width: 80px;
+                text-indent: 0;
+            }
+            .snow-container {
+                position: relative;
+                width: 100%;
+                height: 100vh;
+                pointer-events: none;
+            }
+
+            .snowPart {
+                position: absolute;
+                top: -10px;
+                color: #9ad8ed;
+                display: inline-block;
+                background-color: #9ad8ed;
+                border-radius: 50%;
+                font-size: 10px;
+                opacity: 0.8;
+                user-select: none;
+                animation: fall linear infinite;
+                filter: blur(3px);
+                /* 
+                sway ease-in-out infinite
+                 */
+            }
+
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh); /* 수직으로 떨어짐 */
+                }
+            }
+
+            @keyframes sway {
+                0% {
+                    transform: translateX(0) translateY(0vh);
+                }
+                25% {
+                    transform: translateX(15px) translateY(20vh); /* 오른쪽으로 이동 */
+                }
+                50% {
+                    transform: translateX(-15px) translateY(50vh); /* 왼쪽으로 이동 */
+                }
+                75% {
+                    transform: translateX(10px) translateY(75vh); /* 다시 오른쪽으로 이동 */
+                }
+                100% {
+                    transform: translateX(-10px) translateY(100vh); /* 다시 왼쪽으로 이동 */
+                }
+            }
+        </style>
+
+        <button type="button" class="btn-snow">Snow Start</button>
+        
+        <div class="snow-container"></div>
+        
+        <script>
+            const snowContainer = document.querySelector('.snow-container');
+
+            function createSnowflake() {
+                const snowflake = document.createElement('span');
+                snowflake.classList.add('snowPart');
+                snowflake.textContent = ''; // 눈송이 문자❄
+                snowflake.style.left = Math.random() * 100 + 'vw'; // 랜덤 수평 위치
+                snowflake.style.width = Math.random() * 5 + 7 + 'px'; // 랜덤 크기
+                snowflake.style.height = Math.random() * 5 + 7 + 'px'; // 랜덤 크기
+                snowflake.style.animationDuration = Math.random() * 10 + 2 + 's, ' + (Math.random() * 10 + 2) + 's'; // 랜덤 수직, 수평 애니메이션 속도
+                snowflake.style.opacity = Math.random() + 0.3; // 불규칙한 투명도
+
+                snowContainer.appendChild(snowflake);
+
+                // 눈송이가 화면을 벗어나면 삭제
+                snowflake.addEventListener('animationend', () => {
+                    snowflake.remove();
+                });
+            }
+
+            $('.btn-snow').click(function(){
+                // 눈송이들을 일정 간격으로 생성
+                setInterval(createSnowflake, 150);
+            });
+        </script>
+    </section>
+    
+    <hr>
+
+    <section>
+        <style>
+            .btn-flower1 {
+                font-size: 16px;
+                color: #000;
+                text-indent: 0;
+            }
+            canvas {
+                display: block;
+            }
+        </style>
+
+        <button type="button" class="btn-flower1">flower Start</button>
+        
+        <canvas id="flowerCnvs"></canvas>
+
+        <script>
+            const flowerCnvs = document.getElementById('flowerCnvs');
+            const ctx = flowerCnvs.getContext('2d');
+
+            flowerCnvs.width = window.innerWidth;
+            flowerCnvs.height = window.innerHeight;
+
+            const petalCount = 50;
+            const petals = [];
+
+            class Petal {
+                constructor() {
+                    this.x = Math.random() * flowerCnvs.width;
+                    this.y = Math.random() * flowerCnvs.height;
+                    this.size = Math.random() * 5 + 5;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 + 1;
+                    this.opacity = Math.random() * 0.5 + 0.5;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.y > flowerCnvs.height) {
+                        this.y = 0 - this.size;
+                        this.x = Math.random() * flowerCnvs.width;
+                    }
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 182, 193, ${this.opacity})`; // 핑크색 꽃잎
+                    ctx.fill();
+                }
+            }
+
+            function init() {
+                for (let i = 0; i < petalCount; i++) {
+                    petals.push(new Petal());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, flowerCnvs.width, flowerCnvs.height);
+
+                petals.forEach(petal => {
+                    petal.update();
+                    petal.draw();
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            init();
+
+            window.addEventListener('resize', () => {
+                flowerCnvs.width = window.innerWidth;
+                flowerCnvs.height = window.innerHeight;
+            });
+            $('.btn-flower1').click(function(){
+                // 눈송이들을 일정 간격으로 생성
+                animate();
+            });
+        </script>
+    </section>
+
+    <hr>
+
+    <section>
+        <canvas id="flowerCnvs2"></canvas>
+
+        <script>
+            const flowerCnvs2 = document.getElementById('flowerCnvs2');
+            const ctx2 = flowerCnvs2.getContext('2d');
+
+            flowerCnvs2.width = window.innerWidth;
+            flowerCnvs2.height = window.innerHeight;
+
+            const petalImage = new Image();
+            petalImage.src = './img/flowerLeaf.png'; // 꽃잎 이미지 파일 경로
+
+            const petalCount2 = 50;
+            const petals2 = [];
+
+            class Petal2 {
+                constructor() {
+                    this.x = Math.random() * flowerCnvs2.width;
+                    this.y = Math.random() * flowerCnvs2.height;
+                    this.size = Math.random() * 20 + 20;
+                    this.speedX = Math.random() * 2 - 1;
+                    this.speedY = Math.random() * 1 + 1;
+                    this.rotation = Math.random() * 360;
+                    this.rotationSpeed = Math.random() * 2 - 1;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.rotation += this.rotationSpeed;
+
+                    if (this.y > flowerCnvs2.height) {
+                        this.y = 0 - this.size;
+                        this.x = Math.random() * flowerCnvs2.width;
+                    }
+                }
+
+                draw() {
+                    ctx2.save();
+                    ctx2.translate(this.x, this.y);
+                    ctx2.rotate((this.rotation * Math.PI) / 180);
+                    ctx2.drawImage(petalImage, -this.size / 2, -this.size / 2, this.size, this.size);
+                    ctx2.restore();
+                }
+            }
+
+            function init() {
+                for (let i = 0; i < petalCount2; i++) {
+                    petals2.push(new Petal2());
+                }
+            }
+
+            function animate2() {
+                ctx2.clearRect(0, 0, flowerCnvs2.width, flowerCnvs2.height);
+
+                petals2.forEach(petal => {
+                    petal.update();
+                    petal.draw();
+                });
+
+                requestAnimationFrame(animate2);
+            }
+
+            petalImage.onload = () => {
+                init();
+                animate2();
+            };
+
+            window.addEventListener('resize', () => {
+                flowerCnvs2.width = window.innerWidth;
+                flowerCnvs2.height = window.innerHeight;
+            });
+        </script>
+    </section>
+</body>
+</html>
